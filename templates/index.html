@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Email Detector</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 95%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            height: 150px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            background-color: #f8f9fa;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea::placeholder {
+            color: #999;
+        }
+
+        textarea:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 14px 30px;
+            background: #32b4cb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: #128ce1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 91, 187, 0.5);
+        }
+
+        #result {
+            margin-top: 25px;
+            font-size: 22px;
+            font-weight: bold;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        .spam {
+            color: #e74c3c;
+        }
+
+        .not-spam {
+            color: #27ae60;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Naive Bayes Spam Email Detector</h1>
+        <textarea id="emailInput" placeholder="Type or paste your email content here..."></textarea>
+        <button onclick="checkSpam()">Check Spam</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function checkSpam() {
+            const emailContent = document.getElementById('emailInput').value;
+
+            if (!emailContent) {
+                alert('Please enter some email content.');
+                return;
+            }
+
+            const resultElement = document.getElementById('result');
+            resultElement.innerText = '';
+            resultElement.className = '';
+
+            // post req
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: emailContent })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const result = data.result;
+
+                resultElement.innerText = `Result: ${result}`;
+                resultElement.className = result === 'Spam' ? 'spam' : 'not-spam';
+                const resultArray = result.split(" ");
+                // alert(typeof(Number(resultArray[3].slice(0,-1))))
+                if (parseInt(resultArray[3].slice(0,-1)) > 50) {
+                    resultElement.style.color = '#e74c3c';
+                } else {
+                    resultElement.style.color = '#27ae60';
+                }
+            } else {
+                resultElement.innerText = "Error: Could not get a response.";
+                resultElement.style.color = '#e74c3c'; 
+            }
+        }
+    </script>
+
+</body>
+</html>
